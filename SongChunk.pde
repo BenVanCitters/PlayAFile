@@ -11,7 +11,7 @@ class SongChunk
     duration = dur;
     startTime = startTm;
     freqs = frqs;
-    buffer = Arrays.copyOf(buf,buf.length);
+    buffer = java.util.Arrays.copyOf(buf,buf.length);
     findFreqMoment();
   }
   
