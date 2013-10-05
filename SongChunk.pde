@@ -22,13 +22,13 @@ class SongChunk
     }
     float halfMass = totalMass/2;
     int index = 0;
-     println("freqs.length: " + freqs.length + " totalMass: " + totalMass);
+//     println("freqs.length: " + freqs.length + " totalMass: " + totalMass);
     for(float accumulator = 0; accumulator <= halfMass && halfMass > 0; accumulator+=freqs[index])
     {
       index++;
     }
     freqMoment = index;
-    println("totalMass: " + totalMass + " freqMoment: " + freqMoment);
+//    println("totalMass: " + totalMass + " freqMoment: " + freqMoment);
   }
   
 }

@@ -22,7 +22,7 @@ void setup()
   player = minim.loadFile("tumblr_mty5r3lokV1qhkj08o1.mp3");
   
   // play the file
-//  player.play();
+  player.play();
 //  player.loop();
   SongSorter ss = new SongSorter(player);
   // create an FFT object that has a time-domain buffer the same size as jingle's sample buffer
