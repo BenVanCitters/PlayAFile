@@ -41,23 +41,7 @@ void draw()
 //  fftLin.forward( player.mix );
   background(0);
   
-  noFill();
-//    for(int i = 0; i < fftLin.specSize(); i++)
-//    {
-//      // if the mouse is over the spectrum value we're about to draw
-//      // set the stroke color to red
-//      if ( i == mouseX )
-//      {
-////        centerFrequency = fftLin.indexToFreq(i);
-//        stroke(255, 0, 0);
-//      }
-//      else
-//      {
-//          stroke(255);
-//      }
-//      line(i, height, i, height - fftLin.getBand(i)*4);
-//    }
-//  
+
   stroke(255);
   
   // draw the waveforms

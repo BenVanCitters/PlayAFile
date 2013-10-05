@@ -33,4 +33,23 @@ class SongChunk
     println("totalMass: " + totalMass + " freqMoment: " + freqMoment);
   }
   
+  void draw()
+  {
+    //draw spectrum
+    noFill();
+    for(int i = 0; i < fftLin.specSize(); i++)
+    {
+      line(i, height, i, height - fftLin.getBand(i)*4);
+    }
+    
+    //draw waveform
+    for(int i = 0; i < buffer.length - 1; i++)
+    {
+      float x1 = map( i, 0, buffer.length, 0, width );
+      float x2 = map( i+1, 0, buffer.length, 0, width );
+      line( x1, 50 + buffer[i]*50, x2, 50 + buffer[i+1]*50 );
+      line( x1, 150 + buffer[i]*50, x2, 150 + buffer[i+1]*50 );
+    }
+   
+  }
 }
