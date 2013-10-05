@@ -22,11 +22,10 @@ class SongSorter
     int songPos = 0;
     for(int i =0; i< songChunks.length; i++)
     {
-      
       songPos = (int)(chunkLength*i);
       player.cue(songPos);
-      fftLin.forward(player.mix.toArray());
-//      fftLin.forward(player.mix);
+//      fftLin.forward(player.mix.toArray());
+      fftLin.forward(player.mix);
       float[] ffts = new float[fftLin.specSize()];
       for(int j = 0; j < fftLin.specSize(); j++)
       {
@@ -34,7 +33,8 @@ class SongSorter
       }      
       songChunks[i] = new SongChunk((float)chunkLength,
                                     (long)songPos,
-                                     ffts);
+                                     ffts,
+                                     player.mix.toArray());
     }
     println("songChunks.length(): " + songChunks.length);
   }

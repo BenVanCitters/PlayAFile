@@ -4,12 +4,14 @@ class SongChunk
   long startTime;
   float freqMoment;
   float[] freqs;
+  float[] buffer;
   
-  public SongChunk(  float dur,  long startTm,  float[] frqs)
+  public SongChunk(  float dur,  long startTm,  float[] frqs,float[] buf)
   {
     duration = dur;
     startTime = startTm;
     freqs = frqs;
+    buffer = Arrays.copyOf(buf,buf.length);
     findFreqMoment();
   }
   
@@ -28,7 +30,7 @@ class SongChunk
       index++;
     }
     freqMoment = index;
-//    println("totalMass: " + totalMass + " freqMoment: " + freqMoment);
+    println("totalMass: " + totalMass + " freqMoment: " + freqMoment);
   }
   
 }
