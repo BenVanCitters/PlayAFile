@@ -3,6 +3,7 @@ class SongChunk
   float duration;
   long startTime;
   float freqMoment;
+  float totalMass;
   float[] freqs;
   float[] buffer;
   
@@ -10,14 +11,14 @@ class SongChunk
   {
     duration = dur;
     startTime = startTm;
-    freqs = frqs;
+    freqs = java.util.Arrays.copyOf(frqs,frqs.length);
     buffer = java.util.Arrays.copyOf(buf,buf.length);
     findFreqMoment();
   }
   
   void findFreqMoment()
   {
-    float totalMass = 0;
+    totalMass = 0;
     for(int j = 0; j < freqs.length; j++)
     {
       totalMass += freqs[j];
@@ -25,21 +26,24 @@ class SongChunk
     float halfMass = totalMass/2;
     int index = 0;
 //     println("freqs.length: " + freqs.length + " totalMass: " + totalMass);
-    for(float accumulator = 0; accumulator <= halfMass && halfMass > 0; accumulator+=freqs[index])
+//    for(float accumulator = 0; accumulator <= halfMass && halfMass > 0; accumulator+=freqs[index])
+    float accumulator = 0;
+    int i = 0;
+    for(i = 0; i < freqs.length && accumulator <  halfMass; i++)
     {
-      index++;
+      accumulator += freqs[i];
     }
-    freqMoment = index;
-    println("totalMass: " + totalMass + " freqMoment: " + freqMoment);
+    freqMoment = i;
+//    println("totalMass: " + totalMass + " freqMoment: " + freqMoment);
   }
   
   void draw()
   {
     //draw spectrum
     noFill();
-    for(int i = 0; i < fftLin.specSize(); i++)
+    for(int i = 0; i < freqs.length; i++)
     {
-      line(i, height, i, height - fftLin.getBand(i)*4);
+      line(i, height, i, height - freqs[i]*4);
     }
     
     //draw waveform
