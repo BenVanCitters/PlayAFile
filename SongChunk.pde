@@ -2,6 +2,7 @@ class SongChunk implements Comparable
 {
   float duration;
   long startTime;
+  float maxAmp;
   float freqMoment;
   float totalMass;
   float[] freqs;
@@ -14,6 +15,17 @@ class SongChunk implements Comparable
     freqs = java.util.Arrays.copyOf(frqs,frqs.length);
     buffer = java.util.Arrays.copyOf(buf,buf.length);
     findFreqMoment();
+    findMaxAmp();
+  }
+  
+  void findMaxAmp()
+  {
+    maxAmp =-10;
+    for(int j = 0; j < buffer.length; j++)
+    {
+      maxAmp = max(maxAmp,buffer[j]);
+    }
+    println(maxAmp);
   }
   
   void findFreqMoment()

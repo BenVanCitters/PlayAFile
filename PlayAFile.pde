@@ -19,16 +19,25 @@ void setup()
   
   songSorter = new SongSorter(sample);
   sortTheChunks();
+ 
+  out = minim.getLineOut(Minim.STEREO,2048*2,sample.sampleRate());
   sample.close();
-  
-  out = minim.getLineOut(Minim.STEREO);
+  /*
+   AudioOutput  getLineOut(int type, int bufferSize, float sampleRate) 
+         
+ AudioOutput  getLineOut(int type, int bufferSize, float sampleRate, int bitDepth) 
+
+  */
+  //sample.sampleRate()
+//  out = minim.getLineOut(Minim.STEREO);
+ 
   out.addSignal(songSorter);
 }
 
 
 void sortTheChunks()
 {
- songSorter.sortSongChunks(new SongChunkFreqComparator());
+ songSorter.sortSongChunks(new SongChunkTotalEnergyComparator());
 }
 
 void draw()
@@ -36,7 +45,7 @@ void draw()
 //  fftLin.forward( player.mix );
   background(0);
   
-  songSorter.draw();
+  //songSorter.draw();
   stroke(255);
 }
 
