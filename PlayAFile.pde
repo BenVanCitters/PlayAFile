@@ -10,11 +10,16 @@ AudioOutput out;
 void setup()
 {
   size(500, 500, P3D);
+  background(0);
+  textSize(20);
+  fill(0,255,0);
+  String s = "Processing Audio...";
+  text(s, 10, 10, 700, 100);
   
   // we pass this to Minim so that it can load files from the data directory
   minim = new Minim(this);
 
-  String loadStr = "tumblr_mu2lsqvFFB1s84urxo1.mp3";
+  String loadStr = "tumblr_mu6wwqPqkT1sqdxp0o1.mp3";
   AudioSample sample = minim.loadSample(loadStr, 2048);
   
   songSorter = new SongSorter(sample);
@@ -22,12 +27,7 @@ void setup()
  
   out = minim.getLineOut(Minim.MONO,2048*2,sample.sampleRate());
   sample.close();
-  /*
-   AudioOutput  getLineOut(int type, int bufferSize, float sampleRate) 
-         
- AudioOutput  getLineOut(int type, int bufferSize, float sampleRate, int bitDepth) 
 
-  */
   //sample.sampleRate()
 //  out = minim.getLineOut(Minim.STEREO);
  
@@ -45,8 +45,9 @@ void draw()
 //  fftLin.forward( player.mix );
   background(0);
   
+  //this function has troublie on win7 in processing 2.0+
   songSorter.renderCurrentShape();
-showDebugText();
+  showDebugText();
 }
 
 void showDebugText()
@@ -54,12 +55,11 @@ void showDebugText()
   textSize(20);
   fill(0,255,0);
   String s = "FrameRate: " +  frameRate;
-  text(s, 10, 10, 700, 80);
+  text(s, 10, 10, 700, 100);
 }
 
 void stop()
 {
   minim.stop();
-
   super.stop();
 }

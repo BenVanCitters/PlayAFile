@@ -49,6 +49,7 @@ class SongChunk implements Comparable
 //    println("totalMass: " + totalMass + " freqMoment: " + freqMoment);
   }
   
+  //as of 10-6-13 this function doesn't play nice with processing 2.0.3
   void draw(int curIndex)
   {
     //draw spectrum
@@ -63,14 +64,14 @@ class SongChunk implements Comparable
     //draw waveform
     for(int i = 0; i < buffer.length - 1; i++)
     {
+      //switching colors seems to be problematic in 2.0+
       if((i-curIndex) > 0 && (i-curIndex) < 4096)
         stroke(255,0,0);
       else
         stroke(255);
       float x1 = map( i, 0, buffer.length, 0, width );
       float x2 = map( i+1, 0, buffer.length, 0, width );
-      line( x1, 150 + buffer[i]*50, x2, 150 + buffer[i+1]*100 );
-      
+      line( x1, 150 + buffer[i]*50, x2, 150 + buffer[i+1]*100 );      
     }
    
   }

@@ -6,7 +6,7 @@ class SongSorter implements AudioSignal
   AudioSample sample;
   FFT fftLin;
   SongChunk[] songChunks;
-  long chunkLength = 512*2;
+  long chunkLength = 512*32;
   long count=-1;
   int totalSampLength;
   public SongSorter(AudioSample audioSample)
