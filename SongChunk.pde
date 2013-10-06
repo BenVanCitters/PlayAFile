@@ -1,4 +1,4 @@
-class SongChunk
+class SongChunk implements Comparable
 {
   float duration;
   long startTime;
@@ -55,5 +55,10 @@ class SongChunk
       line( x1, 150 + buffer[i]*50, x2, 150 + buffer[i+1]*50 );
     }
    
+  }
+  
+  int compareTo(Object o)
+  {
+    return 0;
   }
 }

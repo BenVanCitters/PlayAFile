@@ -1,7 +1,7 @@
 import ddf.minim.analysis.*;
 import ddf.minim.*;
 
-class SongSorter
+class SongSorter implements AudioSignal
 {
   AudioSample sample;
   FFT fftLin;
@@ -17,8 +17,7 @@ class SongSorter
   }
   
   private void processSample()
-  {
-    
+  {    
     int fftSize = 256;
     float[] fftSamples = new float[fftSize];
     fftLin = new FFT( fftSize, sample.sampleRate() );
@@ -63,8 +62,17 @@ class SongSorter
     println("songChunks.length(): " + songChunks.length);
   }
   
+  void sortSongChunks(java.util.Comparator c)
+  {
+    java.util.Arrays.sort( songChunks, c);
+  }
+  
   
   float cameraPos = 0;
+  public void resetCameraPos()
+  {
+    cameraPos = 0;
+  }
   
   public void draw()
   {
@@ -73,8 +81,7 @@ class SongSorter
     // our current z position for the camera
     
     // how far apart the spectra are so we can loop the camera back
-    float spectraSpacing = 50;
-    
+    float spectraSpacing = 50;    
     
     float dt = 1.0 / frameRate;
 
@@ -97,6 +104,21 @@ class SongSorter
         }
       }
     }
-    camera( 200, 100, -200 + cameraPos, 75, 50, cameraPos, 0, -1, 0 );
+    camera( -200, 100, -200 + cameraPos, 
+    75, 50, cameraPos+5000, 
+    0, -1, 0 );
+  }
+  
+  double curMillis = 0;
+  void  generate(float[] signal) 
+  {int chunkIndex = 
+    for(int i = 0; i < signal.length; i++)
+    {
+      curMillis
+    }
+  }
+  void  generate(float[] left, float[] right) 
+  {
+    generate(left);generate(right);
   }
 }

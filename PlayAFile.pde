@@ -16,18 +16,24 @@ void setup()
 
   String loadStr = "tumblr_mty5r3lokV1qhkj08o1.mp3";
   AudioSample sample = minim.loadSample(loadStr, 2048);
-
+  
   songSorter = new SongSorter(sample);
+  sortTheChunks();
   sample.close();
 }
 
+
+void sortTheChunks()
+{
+ songSorter.sortSongChunks(new SongChunkFreqComparator());
+}
 
 void draw()
 {
 //  fftLin.forward( player.mix );
   background(0);
   
-songSorter.draw();
+  songSorter.draw();
   stroke(255);
 }
 
