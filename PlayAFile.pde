@@ -6,7 +6,7 @@ import ddf.minim.*;
 
 Minim minim;
 SongSorter songSorter;
-
+AudioOutput out;
 void setup()
 {
   size(500, 500, P3D);
@@ -20,6 +20,9 @@ void setup()
   songSorter = new SongSorter(sample);
   sortTheChunks();
   sample.close();
+  
+  out = minim.getLineOut(Minim.STEREO);
+  out.addSignal(songSorter);
 }
 
 

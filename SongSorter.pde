@@ -7,7 +7,8 @@ class SongSorter implements AudioSignal
   FFT fftLin;
   SongChunk[] songChunks;
   long chunkLength = 100;
-  
+  long count=-1;
+  int totalSampLength;
   public SongSorter(AudioSample audioSample)
   {
     println("starting...");
@@ -18,12 +19,13 @@ class SongSorter implements AudioSignal
   
   private void processSample()
   {    
-    int fftSize = 256;
+    int fftSize = 512;
     float[] fftSamples = new float[fftSize];
     fftLin = new FFT( fftSize, sample.sampleRate() );
     
     float[] leftChannel = sample.getChannel(BufferedAudio.LEFT);
-    long count = (leftChannel.length / fftSize) + 1;
+    totalSampLength = leftChannel.length;
+    count = (leftChannel.length / chunkLength) + 1;
     songChunks = new SongChunk[(int)count];
     
     for(int i =0; i< songChunks.length; i++)
@@ -109,12 +111,16 @@ class SongSorter implements AudioSignal
     0, -1, 0 );
   }
   
-  double curMillis = 0;
+  long curIndex = 0;
   void  generate(float[] signal) 
-  {int chunkIndex = 
+  {
+    
     for(int i = 0; i < signal.length; i++)
     {
-      curMillis
+      int chunkIndex = (int)(curIndex/songChunks[0].buffer.length);
+      int curSampIndx = (int)(curIndex%songChunks[chunkIndex].buffer.length);
+      signal[i] = songChunks[chunkIndex].buffer[curSampIndx];
+      curIndex = (curIndex+1)%totalSampLength;
     }
   }
   void  generate(float[] left, float[] right) 

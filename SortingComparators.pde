@@ -5,7 +5,7 @@ public class SongChunkFreqComparator implements java.util.Comparator
     SongChunk s1 = (SongChunk)o1;
     SongChunk s2 = (SongChunk)o2;
     
-    return (int)(s2.freqMoment - s1.freqMoment);
+    return (int)(s1.freqMoment - s2.freqMoment);
   }
 }
 
