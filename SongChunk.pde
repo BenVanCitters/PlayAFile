@@ -49,22 +49,28 @@ class SongChunk implements Comparable
 //    println("totalMass: " + totalMass + " freqMoment: " + freqMoment);
   }
   
-  void draw()
+  void draw(int curIndex)
   {
     //draw spectrum
     noFill();
-    for(int i = 0; i < freqs.length; i++)
+    stroke(255);
+    
+    for(int i = 0; i < width; i++)
     {
-      line(i, height, i, height - freqs[i]*4);
+      line(i, height, i, height - freqs[i*freqs.length/width]*4);
     }
     
     //draw waveform
     for(int i = 0; i < buffer.length - 1; i++)
     {
+      if((i-curIndex) > 0 && (i-curIndex) < 4096)
+        stroke(255,0,0);
+      else
+        stroke(255);
       float x1 = map( i, 0, buffer.length, 0, width );
       float x2 = map( i+1, 0, buffer.length, 0, width );
-      line( x1, 50 + buffer[i]*50, x2, 50 + buffer[i+1]*50 );
-      line( x1, 150 + buffer[i]*50, x2, 150 + buffer[i+1]*50 );
+      line( x1, 150 + buffer[i]*50, x2, 150 + buffer[i+1]*100 );
+      
     }
    
   }

@@ -14,13 +14,13 @@ void setup()
   // we pass this to Minim so that it can load files from the data directory
   minim = new Minim(this);
 
-  String loadStr = "tumblr_mty5r3lokV1qhkj08o1.mp3";
+  String loadStr = "tumblr_mu2lsqvFFB1s84urxo1.mp3";
   AudioSample sample = minim.loadSample(loadStr, 2048);
   
   songSorter = new SongSorter(sample);
   sortTheChunks();
  
-  out = minim.getLineOut(Minim.STEREO,2048*2,sample.sampleRate());
+  out = minim.getLineOut(Minim.MONO,2048*2,sample.sampleRate());
   sample.close();
   /*
    AudioOutput  getLineOut(int type, int bufferSize, float sampleRate) 
@@ -37,7 +37,7 @@ void setup()
 
 void sortTheChunks()
 {
- songSorter.sortSongChunks(new SongChunkTotalEnergyComparator());
+ songSorter.sortSongChunks(new SongChunkFreqComparator());
 }
 
 void draw()
@@ -45,8 +45,16 @@ void draw()
 //  fftLin.forward( player.mix );
   background(0);
   
-  //songSorter.draw();
-  stroke(255);
+  songSorter.renderCurrentShape();
+showDebugText();
+}
+
+void showDebugText()
+{
+  textSize(20);
+  fill(0,255,0);
+  String s = "FrameRate: " +  frameRate;
+  text(s, 10, 10, 700, 80);
 }
 
 void stop()

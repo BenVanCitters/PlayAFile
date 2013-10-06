@@ -6,7 +6,7 @@ class SongSorter implements AudioSignal
   AudioSample sample;
   FFT fftLin;
   SongChunk[] songChunks;
-  long chunkLength = 512*64;
+  long chunkLength = 512*2;
   long count=-1;
   int totalSampLength;
   public SongSorter(AudioSample audioSample)
@@ -19,7 +19,7 @@ class SongSorter implements AudioSignal
   
   private void processSample()
   {    
-    int fftSize = 512*64;
+    int fftSize = (int)chunkLength;//512*64;
     float[] fftSamples = new float[fftSize];
     fftLin = new FFT( fftSize, sample.sampleRate() );
     
@@ -111,6 +111,21 @@ class SongSorter implements AudioSignal
     0, -1, 0 );
   }
   
+  public void renderCurrentShape()
+  {
+    int chunkIndex = (int)(curIndex/songChunks[0].buffer.length);
+      int curSampIndx = (int)(curIndex%songChunks[chunkIndex].buffer.length);
+//      signal[i] = songChunks[chunkIndex].buffer[curSampIndx];
+      
+    songChunks[chunkIndex].draw(curSampIndx);
+  }
+  
+  public String getCompletionString()
+  {
+//    println("chunkIndex: " + chunkIndex + "/" + songChunks.length);
+    return "chunkIndex: " + curIndex + "/" + songChunks.length;
+  }
+  
   long curIndex = 0;
   void  generate(float[] signal) 
   {
@@ -122,7 +137,7 @@ class SongSorter implements AudioSignal
       signal[i] = songChunks[chunkIndex].buffer[curSampIndx];
       curIndex = (curIndex+1)%totalSampLength;
     }
-    println("chunkIndex: " + chunkIndex + "/" + songChunks.length);
+//    println("signal.length: " + signal.length);
   }
   void  generate(float[] left, float[] right) 
   {
