@@ -5,11 +5,11 @@
 import ddf.minim.*;
 
 Minim minim;
-
+SongSorter songSorter;
 
 void setup()
 {
-  size(1300, 200, P3D);
+  size(500, 500, P3D);
   
   // we pass this to Minim so that it can load files from the data directory
   minim = new Minim(this);
@@ -17,7 +17,7 @@ void setup()
   String loadStr = "tumblr_mty5r3lokV1qhkj08o1.mp3";
   AudioSample sample = minim.loadSample(loadStr, 2048);
 
-  SongSorter ss = new SongSorter(sample);
+  songSorter = new SongSorter(sample);
   sample.close();
 }
 
@@ -27,7 +27,13 @@ void draw()
 //  fftLin.forward( player.mix );
   background(0);
   
-
+songSorter.draw();
   stroke(255);
 }
 
+void stop()
+{
+  minim.stop();
+
+  super.stop();
+}

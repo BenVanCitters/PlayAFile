@@ -14,10 +14,9 @@ class SongSorter
     sample = audioSample;
     
     processSample();
-    
   }
   
-  void processSample()
+  private void processSample()
   {
     
     int fftSize = 256;
@@ -62,5 +61,42 @@ class SongSorter
                " freqMoment: " + songChunks[i].freqMoment);
     }
     println("songChunks.length(): " + songChunks.length);
+  }
+  
+  
+  float cameraPos = 0;
+  
+  public void draw()
+  {
+    // how many units to step per second
+    float cameraStep = 5000;
+    // our current z position for the camera
+    
+    // how far apart the spectra are so we can loop the camera back
+    float spectraSpacing = 50;
+    
+    
+    float dt = 1.0 / frameRate;
+
+  cameraPos += cameraStep * dt;
+
+  // jump back to start position when we get to the end
+  if ( cameraPos > songChunks.length * spectraSpacing )
+  {
+    cameraPos = 0;
+  }
+    for (int s = 0; s < songChunks.length; s++)
+    {
+      float z = s * spectraSpacing;
+      // don't draw spectra that are behind the camera or too far away
+      if ( z > cameraPos - 150 && z < cameraPos + 2000 )
+      {
+        for (int i = 0; i < songChunks[s].freqs.length-1; ++i )
+        {
+          line(-256 + i, songChunks[s].freqs[i]*25, z, -256 + i + 1, songChunks[s].freqs[i+1]*25, z);
+        }
+      }
+    }
+    camera( 200, 100, -200 + cameraPos, 75, 50, cameraPos, 0, -1, 0 );
   }
 }
