@@ -27,7 +27,7 @@ void setup()
   sortTheChunks();
   
   out = minim.getLineOut(Minim.MONO,2048*2,sample.sampleRate());
-  GregorianCalendar gc = new GregorianCalendar();
+  java.util.GregorianCalendar gc = new java.util.GregorianCalendar();
   String fileName = "myrecording" + gc.getTimeInMillis() + ".wav";
   println(fileName);
   recorder = minim.createRecorder(out,fileName ,true);
