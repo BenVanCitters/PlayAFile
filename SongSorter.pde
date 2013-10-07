@@ -17,7 +17,7 @@ class SongSorter implements AudioSignal
     sample = audioSample;
     chunkLength = (long)1<<chunkSize;//(long)pow(chunkLength,chunkSize);
     processSample();
-    drawSpectrograph();
+    renderSpectrograph();
   }
   
   private void processSample()
@@ -72,40 +72,60 @@ println("Processing took: " + (millis() -startTm) + " milliseconds");
     long startTm = millis();
     java.util.Arrays.sort( songChunks, c);
     println("sorting took " + (millis() - startTm) + " milliseconds");
-    drawSpectrograph();
+    renderSpectrograph();
   }
   
   
   public void draw()
-  {
+  {    
     image(spectrographScr,0,0);
+    stroke(0,0,255);
+    pushMatrix();    
+    println("curIndex: " + curIndex);
+    float xLinePos = curChunkIndex*width/songChunks.length;
+    translate(xLinePos,0);
+    rotateY(-PI/2);
+    for(int i = 0; i < height; i++)
+    {
+      line(0, i, 
+           songChunks[curChunkIndex].freqs[i*songChunks[curChunkIndex].freqs.length/height]*4,i);
+    }
+    
+//    line( xLinePos,0,xLinePos,height );  
+    popMatrix();
    //draw current waveform 
    int curSampIndx = (int)(curIndex%songChunks[curChunkIndex].buffer.length);
    //draw waveform
-   int chunksToDraw = 15;
+   int chunksToDraw = 3;
    int totalSamples = songChunks[0].buffer.length*chunksToDraw;
    int startIndex = max(min(curChunkIndex-chunksToDraw/2,songChunks.length-chunksToDraw),0);
    int endIndex = min(curChunkIndex+chunksToDraw/2,songChunks.length);
+   
+   float offset = map( curSampIndx, 0, songChunks[0].buffer.length, 0, width )/(chunksToDraw-1);
+   pushMatrix();
+   translate(-offset,0);
    for(int j = 0; j < chunksToDraw; j++)
    {
-     int chunkIndex = startIndex + j;
-    for(int i = 0; i < songChunks[chunkIndex].buffer.length - 1; i++)
+    int chunkIndex = startIndex + j;
+     
+    for(int i = 0; i < songChunks[chunkIndex].buffer.length-1; i++)
     {
       //switching colors seems to be problematic in 2.0+
       
-      if(j == curChunkIndex){
-        if((i-curSampIndx) > 0 && (i-curSampIndx) < 4096 && (j == curChunkIndex))
+      if(chunkIndex == curChunkIndex){
+        if((i-curSampIndx) > 0 && (i-curSampIndx) < 4096)
         {  stroke(255,0,0);}
         else{
           stroke(255,255,0);}
       }else{
         stroke(255);}
-      float x1 = (map( i, 0, songChunks[chunkIndex].buffer.length, 0, width )+ j*width)/chunksToDraw;
-      float x2 = (map( i+1, 0, songChunks[chunkIndex].buffer.length, 0, width )+ j*width)/chunksToDraw;
+      float x1 = (map( i, 0, songChunks[chunkIndex].buffer.length, 0, width )+ j*width)/(chunksToDraw-1);
+      float x2 = (map( i+1, 0, songChunks[chunkIndex].buffer.length, 0, width )+ j*width)/(chunksToDraw-1);
       line( x1, 150 + songChunks[chunkIndex].buffer[i]*50, 
             x2, 150 + songChunks[chunkIndex].buffer[i+1]*100 );      
     }  
    }
+   popMatrix();
    //draw
   }
   
@@ -123,7 +143,7 @@ println("Processing took: " + (millis() -startTm) + " milliseconds");
     return "chunkIndex: " + curChunkIndex + "/" + songChunks.length;
   }
   int curChunkIndex = 0;
-  long curIndex = 0;
+  int curIndex = 0;
   void  generate(float[] signal) 
   {
     for(int i = 0; i < signal.length; i++)
@@ -140,7 +160,7 @@ println("Processing took: " + (millis() -startTm) + " milliseconds");
     generate(right);
   }
   
-  private void drawSpectrograph()
+  private void renderSpectrograph()
   {
     long startTm = millis();
     

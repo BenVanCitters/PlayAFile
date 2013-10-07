@@ -19,7 +19,7 @@ void setup()
   // we pass this to Minim so that it can load files from the data directory
   minim = new Minim(this);
 
-  String loadStr = "tumblr_mu6wwqPqkT1sqdxp0o1.mp3";
+  String loadStr = "tumblr_mty5r3lokV1qhkj08o1.mp3";
   AudioSample sample = minim.loadSample(loadStr, 2048);
   
   songSorter = new SongSorter(sample,13);
@@ -27,13 +27,9 @@ void setup()
  
   out = minim.getLineOut(Minim.MONO,2048*2,sample.sampleRate());
   sample.close();
-
-  //sample.sampleRate()
-//  out = minim.getLineOut(Minim.STEREO);
  
   out.addSignal(songSorter);
 }
-
 
 void sortTheChunks()
 {
