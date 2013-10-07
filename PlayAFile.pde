@@ -7,6 +7,7 @@ import ddf.minim.*;
 Minim minim;
 SongSorter songSorter;
 AudioOutput out;
+ AudioRecorder recorder;
 void setup()
 {
   size(1200, 800, P3D);
@@ -24,8 +25,12 @@ void setup()
   
   songSorter = new SongSorter(sample,13);
   sortTheChunks();
- 
+  
   out = minim.getLineOut(Minim.MONO,2048*2,sample.sampleRate());
+  GregorianCalendar gc = new GregorianCalendar();
+  String fileName = "myrecording" + gc.getTimeInMillis() + ".wav";
+  println(fileName);
+  recorder = minim.createRecorder(out,fileName ,true);
   sample.close();
  
   out.addSignal(songSorter);
@@ -60,4 +65,12 @@ void stop()
 {
   minim.stop();
   super.stop();
+}
+
+public void keyReleased()
+{
+  if ( key == 'r' ) 
+  {
+    songSorter.saveToDisk(recorder);
+  }
 }

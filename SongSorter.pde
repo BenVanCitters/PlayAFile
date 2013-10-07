@@ -11,6 +11,7 @@ class SongSorter implements AudioSignal
   int totalSampLength;
   PImage spectrograph;
   PImage spectrographScr; //screen-sized copy of spectrograph
+  private boolean isRecording;
   
   public SongSorter(AudioSample audioSample, int chunkSize)
   {
@@ -151,7 +152,10 @@ println("Processing took: " + (millis() -startTm) + " milliseconds");
       curChunkIndex = (int)(curIndex/songChunks[0].buffer.length);
       int curSampIndx = (int)(curIndex%songChunks[curChunkIndex].buffer.length);
       signal[i] = songChunks[curChunkIndex].buffer[curSampIndx];
-      curIndex = (curIndex+1)%totalSampLength;
+      if(!isRecording)
+        curIndex = (curIndex+1)%totalSampLength;
+        else
+        curIndex++;
     }
   }
   void  generate(float[] left, float[] right) 
@@ -184,5 +188,31 @@ println("Processing took: " + (millis() -startTm) + " milliseconds");
                           0,0,
                           width, height);
     println("rendering spectrograph(size:"+ spectrograph.width + ", " + spectrograph.height + " took " + (millis() - startTm) + " milliseconds");                          
+  }
+  
+  public void saveToDisk(AudioRecorder recorder)
+  {
+    
+    curIndex = 0;
+    int startTm = millis();
+    recorder.beginRecord();
+    boolean showOnce = false;
+    while(curIndex < totalSampLength)
+    {
+      isRecording = true;
+      int curSecs = (millis()-startTm);
+      if(curSecs % 1000 == 0 && !showOnce)
+      {
+        println("pct complete: " + curIndex *100.f/totalSampLength+ "%");  
+        showOnce = true;
+      }
+      else if(curSecs % 10 != 0)
+      {
+        showOnce = false;
+      }        
+    }
+    isRecording = false;
+    recorder.endRecord();
+    recorder.save();
   }
 }
