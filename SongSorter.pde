@@ -6,19 +6,23 @@ class SongSorter implements AudioSignal
   AudioSample sample;
   FFT fftLin;
   SongChunk[] songChunks;
-  long chunkLength = 512*32;
+  long chunkLength = 128*16;
   long count=-1;
   int totalSampLength;
-  public SongSorter(AudioSample audioSample)
+  PImage spectrograph;
+  PImage spectrographScr; //screen-sized copy of spectrograph
+  
+  public SongSorter(AudioSample audioSample, int chunkSize)
   {
-    println("starting...");
     sample = audioSample;
-    
+    chunkLength = (long)1<<chunkSize;//(long)pow(chunkLength,chunkSize);
     processSample();
+    drawSpectrograph();
   }
   
   private void processSample()
   {    
+    long startTm = millis();
     int fftSize = (int)chunkLength;//512*64;
     float[] fftSamples = new float[fftSize];
     fftLin = new FFT( fftSize, sample.sampleRate() );
@@ -57,90 +61,108 @@ class SongSorter implements AudioSignal
                                     (long)songPos,
                                      ffts,
                                      fftSamples);
-     if(songChunks[i].totalMass > 0)
-       println("totalMass: " + songChunks[i].totalMass + 
-               " freqMoment: " + songChunks[i].freqMoment);
+//       println("ffts: " + ffts.length);
     }
-    println("songChunks.length(): " + songChunks.length);
+//    println("songChunks.length(): " + songChunks.length);
+println("Processing took: " + (millis() -startTm) + " milliseconds");
   }
   
   void sortSongChunks(java.util.Comparator c)
   {
+    long startTm = millis();
     java.util.Arrays.sort( songChunks, c);
+    println("sorting took " + (millis() - startTm) + " milliseconds");
+    drawSpectrograph();
   }
   
-  
-  float cameraPos = 0;
-  public void resetCameraPos()
-  {
-    cameraPos = 0;
-  }
   
   public void draw()
   {
-    // how many units to step per second
-    float cameraStep = 5000;
-    // our current z position for the camera
-    
-    // how far apart the spectra are so we can loop the camera back
-    float spectraSpacing = 50;    
-    
-    float dt = 1.0 / frameRate;
-
-  cameraPos += cameraStep * dt;
-
-  // jump back to start position when we get to the end
-  if ( cameraPos > songChunks.length * spectraSpacing )
-  {
-    cameraPos = 0;
-  }
-    for (int s = 0; s < songChunks.length; s++)
+    image(spectrographScr,0,0);
+   //draw current waveform 
+   int curSampIndx = (int)(curIndex%songChunks[curChunkIndex].buffer.length);
+   //draw waveform
+   int chunksToDraw = 15;
+   int totalSamples = songChunks[0].buffer.length*chunksToDraw;
+   int startIndex = max(min(curChunkIndex-chunksToDraw/2,songChunks.length-chunksToDraw),0);
+   int endIndex = min(curChunkIndex+chunksToDraw/2,songChunks.length);
+   for(int j = 0; j < chunksToDraw; j++)
+   {
+     int chunkIndex = startIndex + j;
+    for(int i = 0; i < songChunks[chunkIndex].buffer.length - 1; i++)
     {
-      float z = s * spectraSpacing;
-      // don't draw spectra that are behind the camera or too far away
-      if ( z > cameraPos - 150 && z < cameraPos + 2000 )
-      {
-        for (int i = 0; i < songChunks[s].freqs.length-1; ++i )
-        {
-          line(-256 + i, songChunks[s].freqs[i]*25, z, -256 + i + 1, songChunks[s].freqs[i+1]*25, z);
-        }
-      }
-    }
-    camera( -200, 100, -200 + cameraPos, 
-    75, 50, cameraPos+5000, 
-    0, -1, 0 );
+      //switching colors seems to be problematic in 2.0+
+      
+      if(j == curChunkIndex){
+        if((i-curSampIndx) > 0 && (i-curSampIndx) < 4096 && (j == curChunkIndex))
+        {  stroke(255,0,0);}
+        else{
+          stroke(255,255,0);}
+      }else{
+        stroke(255);}
+      float x1 = (map( i, 0, songChunks[chunkIndex].buffer.length, 0, width )+ j*width)/chunksToDraw;
+      float x2 = (map( i+1, 0, songChunks[chunkIndex].buffer.length, 0, width )+ j*width)/chunksToDraw;
+      line( x1, 150 + songChunks[chunkIndex].buffer[i]*50, 
+            x2, 150 + songChunks[chunkIndex].buffer[i+1]*100 );      
+    }  
+   }
+   //draw
   }
   
   public void renderCurrentShape()
   {
-    int chunkIndex = (int)(curIndex/songChunks[0].buffer.length);
-      int curSampIndx = (int)(curIndex%songChunks[chunkIndex].buffer.length);
+//    int chunkIndex = (int)(curIndex/songChunks[0].buffer.length);
+      int curSampIndx = (int)(curIndex%songChunks[curChunkIndex].buffer.length);
 //      signal[i] = songChunks[chunkIndex].buffer[curSampIndx];
       
-    songChunks[chunkIndex].draw(curSampIndx);
+    songChunks[curChunkIndex].draw(curSampIndx);
   }
   
   public String getCompletionString()
   {
-//    println("chunkIndex: " + chunkIndex + "/" + songChunks.length);
-    return "chunkIndex: " + curIndex + "/" + songChunks.length;
+    return "chunkIndex: " + curChunkIndex + "/" + songChunks.length;
   }
-  
+  int curChunkIndex = 0;
   long curIndex = 0;
   void  generate(float[] signal) 
   {
-    int chunkIndex = 0;
     for(int i = 0; i < signal.length; i++)
     {
-      chunkIndex = (int)(curIndex/songChunks[0].buffer.length);
-      int curSampIndx = (int)(curIndex%songChunks[chunkIndex].buffer.length);
-      signal[i] = songChunks[chunkIndex].buffer[curSampIndx];
+      curChunkIndex = (int)(curIndex/songChunks[0].buffer.length);
+      int curSampIndx = (int)(curIndex%songChunks[curChunkIndex].buffer.length);
+      signal[i] = songChunks[curChunkIndex].buffer[curSampIndx];
       curIndex = (curIndex+1)%totalSampLength;
     }
-//    println("signal.length: " + signal.length);
   }
   void  generate(float[] left, float[] right) 
   {
-    generate(left);generate(right);
+    generate(left);
+    generate(right);
+  }
+  
+  private void drawSpectrograph()
+  {
+    long startTm = millis();
+    
+    spectrograph = createImage(songChunks.length,(int)chunkLength/2,RGB);
+
+    spectrograph.loadPixels();
+    for(int i = 0; i < spectrograph.height-1; i++)
+    {
+      for(int j = 0; j < spectrograph.width; j++)
+      {
+        int pixelIndex = i*spectrograph.width +j;
+        float amt = songChunks[j].freqs[i];
+        spectrograph.pixels[pixelIndex] = color(amt,amt,amt);
+      }
+    }
+    spectrograph.updatePixels();
+    spectrographScr = createImage(width,height,RGB);
+    spectrographScr.copy(spectrograph,
+                          0,0,
+                          spectrograph.width,spectrograph.height,
+                          0,0,
+                          width, height);
+    println("rendering spectrograph(size:"+ spectrograph.width + ", " + spectrograph.height + " took " + (millis() - startTm) + " milliseconds");                          
   }
 }

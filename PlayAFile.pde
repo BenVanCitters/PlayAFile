@@ -9,7 +9,7 @@ SongSorter songSorter;
 AudioOutput out;
 void setup()
 {
-  size(500, 500, P3D);
+  size(1200, 800, P3D);
   background(0);
   textSize(20);
   fill(0,255,0);
@@ -22,7 +22,7 @@ void setup()
   String loadStr = "tumblr_mu6wwqPqkT1sqdxp0o1.mp3";
   AudioSample sample = minim.loadSample(loadStr, 2048);
   
-  songSorter = new SongSorter(sample);
+  songSorter = new SongSorter(sample,13);
   sortTheChunks();
  
   out = minim.getLineOut(Minim.MONO,2048*2,sample.sampleRate());
@@ -37,16 +37,15 @@ void setup()
 
 void sortTheChunks()
 {
- songSorter.sortSongChunks(new SongChunkFreqComparator());
+  songSorter.sortSongChunks(new SongChunkTotalEnergyComparator());
 }
 
 void draw()
 {
-//  fftLin.forward( player.mix );
   background(0);
-  
   //this function has troublie on win7 in processing 2.0+
-  songSorter.renderCurrentShape();
+//  songSorter.renderCurrentShape();
+  songSorter.draw();
   showDebugText();
 }
 
@@ -55,7 +54,10 @@ void showDebugText()
   textSize(20);
   fill(0,255,0);
   String s = "FrameRate: " +  frameRate;
-  text(s, 10, 10, 700, 100);
+  text(s, 10, 10, 700, 30);
+  
+  String completion = songSorter.getCompletionString();
+  text(completion, 10, 30, 900, 30);
 }
 
 void stop()

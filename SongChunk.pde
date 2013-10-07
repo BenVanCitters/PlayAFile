@@ -1,4 +1,4 @@
-class SongChunk implements Comparable
+class SongChunk
 {
   float duration;
   long startTime;
@@ -25,9 +25,11 @@ class SongChunk implements Comparable
     {
       maxAmp = max(maxAmp,buffer[j]);
     }
-    println(maxAmp);
+//    println(maxAmp);
   }
   
+  //get the 'centroid' of the spetrograph - using a poor-man's 
+  //algorith
   void findFreqMoment()
   {
     totalMass = 0;
@@ -35,13 +37,12 @@ class SongChunk implements Comparable
     {
       totalMass += freqs[j];
     }
+
     float halfMass = totalMass/2;
     int index = 0;
-//     println("freqs.length: " + freqs.length + " totalMass: " + totalMass);
-//    for(float accumulator = 0; accumulator <= halfMass && halfMass > 0; accumulator+=freqs[index])
     float accumulator = 0;
     int i = 0;
-    for(i = 0; i < freqs.length && accumulator <  halfMass; i++)
+    for(i = 0; (i < freqs.length) && (accumulator <  halfMass); i++)
     {
       accumulator += freqs[i];
     }
@@ -51,11 +52,11 @@ class SongChunk implements Comparable
   
   //as of 10-6-13 this function doesn't play nice with processing 2.0.3
   void draw(int curIndex)
-  {
-    //draw spectrum
+  {    
     noFill();
     stroke(255);
     
+    //draw spectrum
     for(int i = 0; i < width; i++)
     {
       line(i, height, i, height - freqs[i*freqs.length/width]*4);
@@ -72,12 +73,6 @@ class SongChunk implements Comparable
       float x1 = map( i, 0, buffer.length, 0, width );
       float x2 = map( i+1, 0, buffer.length, 0, width );
       line( x1, 150 + buffer[i]*50, x2, 150 + buffer[i+1]*100 );      
-    }
-   
-  }
-  
-  int compareTo(Object o)
-  {
-    return 0;
+    }   
   }
 }
