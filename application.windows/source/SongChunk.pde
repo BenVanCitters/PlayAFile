@@ -3,6 +3,7 @@ class SongChunk
   float duration;
   long startTime;
   float maxAmp;
+  int peakFreqIndex;
   float freqMoment;
   float totalMass;
   float[] freqs;
@@ -16,16 +17,27 @@ class SongChunk
     buffer = java.util.Arrays.copyOf(buf,buf.length);
     findFreqMoment();
     findMaxAmp();
+    findHighestFreqIndex();
   }
   
   void findMaxAmp()
   {
     maxAmp =-10;
-    for(int j = 0; j < buffer.length; j++)
+    for(int i = 0; i < buffer.length; i++)
     {
-      maxAmp = max(maxAmp,buffer[j]);
+      maxAmp = max(maxAmp,buffer[i]);
     }
-//    println(maxAmp);
+  }
+  
+  //finds and stores this sample's peak spectrogram index
+  void findHighestFreqIndex()
+  {
+    peakFreqIndex =0;
+    for(int i = 0; i < freqs.length; i++)
+    {
+      if(freqs[peakFreqIndex] < freqs[i])
+      peakFreqIndex = i;
+    }
   }
   
   //get the 'centroid' of the spetrograph - using a poor-man's 

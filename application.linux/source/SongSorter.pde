@@ -11,6 +11,7 @@ class SongSorter implements AudioSignal
   int totalSampLength;
   PImage spectrograph;
   PImage spectrographScr; //screen-sized copy of spectrograph
+  private boolean isRecording;
   
   public SongSorter(AudioSample audioSample, int chunkSize)
   {
@@ -81,7 +82,6 @@ println("Processing took: " + (millis() -startTm) + " milliseconds");
     image(spectrographScr,0,0);
     stroke(0,0,255);
     pushMatrix();    
-    println("curIndex: " + curIndex);
     float xLinePos = curChunkIndex*width/songChunks.length;
     translate(xLinePos,0);
     rotateY(-PI/2);
@@ -142,8 +142,10 @@ println("Processing took: " + (millis() -startTm) + " milliseconds");
   {
     return "chunkIndex: " + curChunkIndex + "/" + songChunks.length;
   }
+  
   int curChunkIndex = 0;
   int curIndex = 0;
+  //method for AudioSignal interface
   void  generate(float[] signal) 
   {
     for(int i = 0; i < signal.length; i++)
@@ -151,10 +153,14 @@ println("Processing took: " + (millis() -startTm) + " milliseconds");
       curChunkIndex = (int)(curIndex/songChunks[0].buffer.length);
       int curSampIndx = (int)(curIndex%songChunks[curChunkIndex].buffer.length);
       signal[i] = songChunks[curChunkIndex].buffer[curSampIndx];
-      curIndex = (curIndex+1)%totalSampLength;
+      if(!isRecording)
+        curIndex = (curIndex+1)%totalSampLength;
+        else
+        curIndex++;
     }
   }
-  void  generate(float[] left, float[] right) 
+  //method for AudioSignal interface
+  void generate(float[] left, float[] right) 
   {
     generate(left);
     generate(right);
@@ -184,5 +190,46 @@ println("Processing took: " + (millis() -startTm) + " milliseconds");
                           0,0,
                           width, height);
     println("rendering spectrograph(size:"+ spectrograph.width + ", " + spectrograph.height + " took " + (millis() - startTm) + " milliseconds");                          
+  }
+  
+  // saves the song to disk - you have to wait for it...
+  public void saveToDisk(AudioRecorder recorder)
+  {    
+    curIndex = 0;
+    int startTm = millis();
+    recorder.beginRecord();
+    boolean showOnce = false;
+    while(curIndex < totalSampLength)
+    {
+      isRecording = true;
+      int curSecs = (millis()-startTm);
+      if(curSecs % 1000 == 0 && !showOnce)
+      {
+        println("pct complete: " + curIndex *100.f/totalSampLength+ "%");  
+        showOnce = true;
+      }
+      else if(curSecs % 10 != 0)
+      {
+        showOnce = false;
+      }        
+    }
+    isRecording = false;
+    recorder.endRecord();
+    recorder.save();
+  }
+  
+  float[] getAvgFreqVect()
+  {
+    float[] avg = new float[songChunks[0].freqs.length];
+        
+    for(int i = 0; i < songChunks[0].freqs.length; i++)
+    {
+      for(int j =0; j< songChunks.length; j++)
+      {
+        avg[i] += songChunks[j].freqs[i];
+      }
+      avg[i] /= songChunks.length;
+    }
+    return avg;
   }
 }

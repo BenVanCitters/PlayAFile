@@ -30,6 +30,7 @@ public class PlayAFile extends PApplet {
 Minim minim;
 SongSorter songSorter;
 AudioOutput out;
+ AudioRecorder recorder;
 public void setup()
 {
   size(1200, 800, P3D);
@@ -47,8 +48,12 @@ public void setup()
   
   songSorter = new SongSorter(sample,13);
   sortTheChunks();
- 
+  
   out = minim.getLineOut(Minim.MONO,2048*2,sample.sampleRate());
+  GregorianCalendar gc = new GregorianCalendar();
+  String fileName = "myrecording" + gc.getTimeInMillis() + ".wav";
+  println(fileName);
+  recorder = minim.createRecorder(out,fileName ,true);
   sample.close();
  
   out.addSignal(songSorter);
@@ -56,7 +61,9 @@ public void setup()
 
 public void sortTheChunks()
 {
-  songSorter.sortSongChunks(new SongChunkTotalEnergyComparator());
+  songSorter.sortSongChunks(new SongChunkFreqComparator());
+
+//  songSorter.sortSongChunks(new SongChunkFrewDistanceComparator(songSorter.getAvgFreqVect()));
 }
 
 public void draw()
@@ -84,11 +91,20 @@ public void stop()
   minim.stop();
   super.stop();
 }
+
+public void keyReleased()
+{
+  if ( key == 'r' ) 
+  {
+    songSorter.saveToDisk(recorder);
+  }
+}
 class SongChunk
 {
   float duration;
   long startTime;
   float maxAmp;
+  int peakFreqIndex;
   float freqMoment;
   float totalMass;
   float[] freqs;
@@ -102,16 +118,27 @@ class SongChunk
     buffer = java.util.Arrays.copyOf(buf,buf.length);
     findFreqMoment();
     findMaxAmp();
+    findHighestFreqIndex();
   }
   
   public void findMaxAmp()
   {
     maxAmp =-10;
-    for(int j = 0; j < buffer.length; j++)
+    for(int i = 0; i < buffer.length; i++)
     {
-      maxAmp = max(maxAmp,buffer[j]);
+      maxAmp = max(maxAmp,buffer[i]);
     }
-//    println(maxAmp);
+  }
+  
+  //finds and stores this sample's peak spectrogram index
+  public void findHighestFreqIndex()
+  {
+    peakFreqIndex =0;
+    for(int i = 0; i < freqs.length; i++)
+    {
+      if(freqs[peakFreqIndex] < freqs[i])
+      peakFreqIndex = i;
+    }
   }
   
   //get the 'centroid' of the spetrograph - using a poor-man's 
@@ -175,6 +202,7 @@ class SongSorter implements AudioSignal
   int totalSampLength;
   PImage spectrograph;
   PImage spectrographScr; //screen-sized copy of spectrograph
+  private boolean isRecording;
   
   public SongSorter(AudioSample audioSample, int chunkSize)
   {
@@ -245,7 +273,6 @@ println("Processing took: " + (millis() -startTm) + " milliseconds");
     image(spectrographScr,0,0);
     stroke(0,0,255);
     pushMatrix();    
-    println("curIndex: " + curIndex);
     float xLinePos = curChunkIndex*width/songChunks.length;
     translate(xLinePos,0);
     rotateY(-PI/2);
@@ -306,8 +333,10 @@ println("Processing took: " + (millis() -startTm) + " milliseconds");
   {
     return "chunkIndex: " + curChunkIndex + "/" + songChunks.length;
   }
+  
   int curChunkIndex = 0;
   int curIndex = 0;
+  //method for AudioSignal interface
   public void  generate(float[] signal) 
   {
     for(int i = 0; i < signal.length; i++)
@@ -315,10 +344,14 @@ println("Processing took: " + (millis() -startTm) + " milliseconds");
       curChunkIndex = (int)(curIndex/songChunks[0].buffer.length);
       int curSampIndx = (int)(curIndex%songChunks[curChunkIndex].buffer.length);
       signal[i] = songChunks[curChunkIndex].buffer[curSampIndx];
-      curIndex = (curIndex+1)%totalSampLength;
+      if(!isRecording)
+        curIndex = (curIndex+1)%totalSampLength;
+        else
+        curIndex++;
     }
   }
-  public void  generate(float[] left, float[] right) 
+  //method for AudioSignal interface
+  public void generate(float[] left, float[] right) 
   {
     generate(left);
     generate(right);
@@ -349,8 +382,50 @@ println("Processing took: " + (millis() -startTm) + " milliseconds");
                           width, height);
     println("rendering spectrograph(size:"+ spectrograph.width + ", " + spectrograph.height + " took " + (millis() - startTm) + " milliseconds");                          
   }
+  
+  // saves the song to disk - you have to wait for it...
+  public void saveToDisk(AudioRecorder recorder)
+  {    
+    curIndex = 0;
+    int startTm = millis();
+    recorder.beginRecord();
+    boolean showOnce = false;
+    while(curIndex < totalSampLength)
+    {
+      isRecording = true;
+      int curSecs = (millis()-startTm);
+      if(curSecs % 1000 == 0 && !showOnce)
+      {
+        println("pct complete: " + curIndex *100.f/totalSampLength+ "%");  
+        showOnce = true;
+      }
+      else if(curSecs % 10 != 0)
+      {
+        showOnce = false;
+      }        
+    }
+    isRecording = false;
+    recorder.endRecord();
+    recorder.save();
+  }
+  
+  public float[] getAvgFreqVect()
+  {
+    float[] avg = new float[songChunks[0].freqs.length];
+        
+    for(int i = 0; i < songChunks[0].freqs.length; i++)
+    {
+      for(int j =0; j< songChunks.length; j++)
+      {
+        avg[i] += songChunks[j].freqs[i];
+      }
+      avg[i] /= songChunks.length;
+    }
+    return avg;
+  }
 }
-public class SongChunkFreqComparator implements java.util.Comparator
+//compares the 'moment' of the spectrogram
+public class SongChunkFreqMomentComparator implements java.util.Comparator
 {
   public int compare(Object o1, Object o2)
   {
@@ -358,6 +433,18 @@ public class SongChunkFreqComparator implements java.util.Comparator
     SongChunk s2 = (SongChunk)o2;
     
     return (int)(s1.freqMoment - s2.freqMoment);
+  }
+}
+
+//compares the loudest frequency bar of each spectrogram
+public class SongChunkFreqComparator implements java.util.Comparator
+{
+  public int compare(Object o1, Object o2)
+  {
+    SongChunk s1 = (SongChunk)o1;
+    SongChunk s2 = (SongChunk)o2;
+    
+    return (int)(s1.peakFreqIndex - s2.peakFreqIndex);
   }
 }
 
@@ -382,6 +469,33 @@ public class SongChunkTotalEnergyComparator implements java.util.Comparator
     return (int)(s1.totalMass - s2.totalMass);
   }
 }
+
+//treats the sprectrogram of each chunk as a vector and compares 'distance'
+//from a given vector 'vect'
+public class SongChunkFrewDistanceComparator implements java.util.Comparator
+{
+  public float[] vect;
+  public SongChunkFrewDistanceComparator(float[] vct)
+  {
+    vect = vct;
+  }
+  public int compare(Object o1, Object o2)
+  {
+    SongChunk s1 = (SongChunk)o1;
+    float d1 = 0;
+    SongChunk s2 = (SongChunk)o2;
+    float d2 = 0;
+    for(int i = 0; i < s1.freqs.length; i++)
+    {
+      float vectSqrd = vect[i]*vect[i];
+      d1 += vectSqrd - s1.freqs[i]*s1.freqs[i];
+      d2 += vectSqrd - s2.freqs[i]*s2.freqs[i];
+    }
+//    d1 = sqrt(d1);//do i really need to take the square root?
+    return (int)(d1 - d2);
+  }
+}
+
   static public void main(String args[]) {
     PApplet.main(new String[] { "--bgcolor=#F0F0F0", "PlayAFile" });
   }
