@@ -38,7 +38,9 @@ void setup()
 
 void sortTheChunks()
 {
-  songSorter.sortSongChunks(new SongChunkTotalEnergyComparator());
+  songSorter.sortSongChunks(new SongChunkFreqComparator());
+
+//  songSorter.sortSongChunks(new SongChunkFrewDistanceComparator(songSorter.getAvgFreqVect()));
 }
 
 void draw()

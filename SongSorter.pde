@@ -82,7 +82,6 @@ println("Processing took: " + (millis() -startTm) + " milliseconds");
     image(spectrographScr,0,0);
     stroke(0,0,255);
     pushMatrix();    
-    println("curIndex: " + curIndex);
     float xLinePos = curChunkIndex*width/songChunks.length;
     translate(xLinePos,0);
     rotateY(-PI/2);
@@ -143,8 +142,10 @@ println("Processing took: " + (millis() -startTm) + " milliseconds");
   {
     return "chunkIndex: " + curChunkIndex + "/" + songChunks.length;
   }
+  
   int curChunkIndex = 0;
   int curIndex = 0;
+  //method for AudioSignal interface
   void  generate(float[] signal) 
   {
     for(int i = 0; i < signal.length; i++)
@@ -158,7 +159,8 @@ println("Processing took: " + (millis() -startTm) + " milliseconds");
         curIndex++;
     }
   }
-  void  generate(float[] left, float[] right) 
+  //method for AudioSignal interface
+  void generate(float[] left, float[] right) 
   {
     generate(left);
     generate(right);
@@ -190,9 +192,9 @@ println("Processing took: " + (millis() -startTm) + " milliseconds");
     println("rendering spectrograph(size:"+ spectrograph.width + ", " + spectrograph.height + " took " + (millis() - startTm) + " milliseconds");                          
   }
   
+  // saves the song to disk - you have to wait for it...
   public void saveToDisk(AudioRecorder recorder)
-  {
-    
+  {    
     curIndex = 0;
     int startTm = millis();
     recorder.beginRecord();
@@ -214,5 +216,20 @@ println("Processing took: " + (millis() -startTm) + " milliseconds");
     isRecording = false;
     recorder.endRecord();
     recorder.save();
+  }
+  
+  float[] getAvgFreqVect()
+  {
+    float[] avg = new float[songChunks[0].freqs.length];
+        
+    for(int i = 0; i < songChunks[0].freqs.length; i++)
+    {
+      for(int j =0; j< songChunks.length; j++)
+      {
+        avg[i] += songChunks[j].freqs[i];
+      }
+      avg[i] /= songChunks.length;
+    }
+    return avg;
   }
 }
