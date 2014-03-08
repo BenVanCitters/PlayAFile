@@ -28,11 +28,11 @@ class SongSorter implements AudioSignal
     float[] fftSamples = new float[fftSize];
     fftLin = new FFT( fftSize, sample.sampleRate() );
     
-    float[] leftChannel = sample.getChannel(BufferedAudio.LEFT);
+    float[] leftChannel = sample.getChannel(2);
     totalSampLength = leftChannel.length;
     count = (leftChannel.length / chunkLength) + 1;
     songChunks = new SongChunk[(int)count];
-    
+    println("SongChunk count: " + (int)count);
     for(int i =0; i< songChunks.length; i++)
     {
       int songPos = (int)(chunkLength*i);
@@ -72,7 +72,20 @@ println("Processing took: " + (millis() -startTm) + " milliseconds");
   {
     long startTm = millis();
     java.util.Arrays.sort( songChunks, c);
+
+    
     println("sorting took " + (millis() - startTm) + " milliseconds");
+    renderSpectrograph();
+  }
+  
+  void graphSonChunks()
+  {
+    long startTm = millis();
+
+    NearestNeighbor nn = new NearestNeighbor(0,songChunks);
+    println("nn.chunkList.toArray().length: " + nn.chunkList.toArray().length);
+    nn.chunkList.toArray(songChunks);
+    println("graphing took " + (millis() - startTm) + " milliseconds");
     renderSpectrograph();
   }
   
@@ -155,7 +168,7 @@ println("Processing took: " + (millis() -startTm) + " milliseconds");
       signal[i] = songChunks[curChunkIndex].buffer[curSampIndx];
       if(!isRecording)
         curIndex = (curIndex+1)%totalSampLength;
-        else
+      else if(curIndex+1 <= totalSampLength) 
         curIndex++;
     }
   }

@@ -23,7 +23,7 @@ void setup()
   String loadStr = "tumblr_mty5r3lokV1qhkj08o1.mp3";
   AudioSample sample = minim.loadSample(loadStr, 2048);
   
-  songSorter = new SongSorter(sample,13);
+  songSorter = new SongSorter(sample,9);
   sortTheChunks();
   
   out = minim.getLineOut(Minim.MONO,2048*2,sample.sampleRate());
@@ -46,7 +46,7 @@ void sortTheChunks()
 void draw()
 {
   background(0);
-  //this function has troublie on win7 in processing 2.0+
+  //this function has trouble on win7 in processing 2.0+
 //  songSorter.renderCurrentShape();
   songSorter.draw();
   showDebugText();
@@ -65,6 +65,8 @@ void showDebugText()
 
 void stop()
 {
+    recorder.endRecord();
+    recorder.save();  
   minim.stop();
   super.stop();
 }
